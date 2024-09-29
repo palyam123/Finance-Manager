@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Finance Manager</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ecf0f1;
+            margin: 0;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background-color: #2980b9;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            display: none; /* Initially hidden until logged in */
+        }
+
+        input[type="text"], input[type="email"], input[type="number"], input[type="password"], input[type="date"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+
+        #total {
+            margin-top: 20px;
+            font-size: 20px;
+        }
+
+        #userEmail {
+            font-size: 16px;
+            display: none; /* Initially hidden */
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Personal Finance Manager</h1>
+        <span id="userEmail"></span>
+    </header>
+
+    <!-- Login Section -->
+    <div id="login-form">
+        <h2>Login to Your Account</h2>
+        <form onsubmit="loginUser(event)">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" required>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+    </div>
+
+    <div class="container">
+        <h2>Dashboard</h2>
+        <!-- Input for expenses -->
+        <div>
+            <h3>Add Expense</h3>
+            <form onsubmit="addExpense(event)">
+                <div class="form-group">
+                    <label for="expenseAmount">Amount</label>
+                    <input type="number" id="expenseAmount" required>
+                </div>
+                <div class="form-group">
+                    <label for="expenseCategory">Category</label>
+                    <input type="text" id="expenseCategory" required>
+                </div>
+                <div class="form-group">
+                    <label for="expenseDate">Date</label>
+                    <input type="date" id="expenseDate" required>
+                </div>
+                <button type="submit">Add Expense</button>
+            </form>
+        </div>
+        
+        <!-- Input for income -->
+        <div>
+            <h3>Add Income</h3>
+            <form onsubmit="addIncome(event)">
+                <div class="form-group">
+                    <label for="incomeAmount">Amount</label>
+                    <input type="number" id="incomeAmount" required>
+                </div>
+                <div class="form-group">
+                    <label for="incomeSource">Source</label>
+                    <input type="text" id="incomeSource" required>
+                </div>
+                <div class="form-group">
+                    <label for="incomeDate">Date</label>
+                    <input type="date" id="incomeDate" required>
+                </div>
+                <button type="submit">Add Income</button>
+            </form>
+        </div>
+
+        <!-- Display transactions -->
+        <div>
+            <h3>Transactions</h3>
+            <table id="transactionsTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Category/Source</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Display total profit or loss -->
+        <div id="total"></div>
+    </div>
+
+    <script>
+        let transactions = [];
+        let totalBalance = 0;
+
+        function loginUser(event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            if (email && password) { // Simple validation check
+                document.getElementById('login-form').style.display = 'none';
+                document.querySelector('.container').style.display = 'block';
+                document.getElementById('userEmail').innerText = email;
+                document.getElementById('userEmail').style.display = 'inline';
+            } else {
+                alert('Please enter valid credentials!');
+            }
+        }
+
+        function addExpense(event) {
+            event.preventDefault();
+            const amount = parseFloat(document.getElementById('expenseAmount').value);
+            const category = document.getElementById('expenseCategory').value;
+            const date = document.getElementById('expenseDate').value;
+            const expense = { type: 'Expense', amount: -amount, category, date };
+            transactions.push(expense);
+            totalBalance -= amount;
+            updateTotal();
+            displayTransactions();
+        }
+
+        function addIncome(event) {
+            event.preventDefault();
+            const amount = parseFloat(document.getElementById('incomeAmount').value);
+            const source = document.getElementById('incomeSource').value;
+            const date = document.getElementById('incomeDate').value;
+            const income = { type: 'Income', amount, source, date };
+            transactions.push(income);
+            totalBalance += amount;
+            updateTotal();
+            displayTransactions();
+        }
+
+        function displayTransactions() {
+            const tableBody = document.getElementById('transactionsTable').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = ''; // Clear the table first
+            transactions.forEach(transaction => {
+                let row = tableBody.insertRow();
+                let dateCell = row.insertCell(0);
+                let typeCell = row.insertCell(1);
+                let amountCell = row.insertCell(2);
+                let categoryCell = row.insertCell(3);
+
+                dateCell.innerHTML = transaction.date;
+                typeCell.innerHTML = transaction.type;
+                amountCell.innerHTML = Math.abs(transaction.amount);
+                categoryCell.innerHTML = transaction.type === 'Income' ? transaction.source : transaction.category;
+            });
+        }
+
+        function updateTotal() {
+            const totalDiv = document.getElementById('total');
+            const profitOrLoss = totalBalance >= 0 ? 'Profit' : 'Loss';
+            totalDiv.innerText = `Total ${profitOrLoss}: $${Math.abs(totalBalance).toFixed(2)}`;
+        }
+    </script>
+</body>
+</html>
