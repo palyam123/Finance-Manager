@@ -13,6 +13,7 @@ This is a web application that allows users to track their income, expenses, and
 ### Frontend:
 - HTML
 - CSS
+- javaScript
 
 
 ### Backend:
